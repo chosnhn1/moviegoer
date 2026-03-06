@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    include: secret
+  application:
+    name: backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/moviegoer-db
+    username: moviegoer-user
+    password: db-password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
