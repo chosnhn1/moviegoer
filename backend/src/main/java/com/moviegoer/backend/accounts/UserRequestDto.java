@@ -1,4 +1,8 @@
 package com.moviegoer.backend.accounts;
 
-public record UserRequestDto() {
+public record UserRequestDto(
+    String username,
+    String password
+) {
+    
 }
