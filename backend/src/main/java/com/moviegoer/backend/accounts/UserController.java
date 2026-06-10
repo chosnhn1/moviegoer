@@ -42,6 +42,9 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "사용자 생성")
+    @ApiResponses(
+        @ApiResponse(responseCode = "200", description = "성공")
+    )
     public ResponseEntity<UserResponseDto> createUser(
         @RequestBody UserRequestDto user
     ) {

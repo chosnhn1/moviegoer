@@ -1,5 +1,6 @@
 package com.moviegoer.backend.accounts;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,10 +37,18 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름입니다.");
         }
 
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(Role.ROLE_AUTHOR);
+
+        if (userRequestDto.username().equals("admin")) {
+            roles.add(Role.ROLE_ADMIN);
+        }
+
         User savedUser = userRepository.save(
             User.builder()
                 .username(userRequestDto.username())
                 .password(userRequestDto.password())
+                .roles(roles)
                 .build()
         );
 

@@ -2,11 +2,11 @@ spring:
   profiles:
     include: secret
   application:
-    name: backend
+    name: moviegoer-backend
   datasource:
-    url: jdbc:mysql://localhost:3306/moviegoer-db
-    username: moviegoer-user
-    password: db-password
+    url: jdbc:mysql://localhost:3307/moviegoer-db
+    username: moviegoer-admin
+    password: dev_password
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

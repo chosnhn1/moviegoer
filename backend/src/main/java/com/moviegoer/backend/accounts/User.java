@@ -6,13 +6,18 @@ import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.moviegoer.backend.articles.Article;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -20,14 +25,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
 @Data
+@NoArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     private static PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -58,10 +67,24 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToMany(
+        mappedBy = "author",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private List<Article> articles;
+
+    public static UserBuilder builder() {
+        return new UserBuilder();
+    }
+
+
     public void setPassword(String password) {
         this.password = passwordEncoder.encode(password);
     }
 
+    // Customized UserBuilder
     public static class UserBuilder {
         private Long id;
         private String username;
@@ -97,6 +120,11 @@ public class User {
             return this;
         }
 
+        public UserBuilder articles(List<Article> articles) {
+            this.articles = articles;
+            return this;
+        }
+
         public UserBuilder roles(Set<Role> roles) {
             this.roles = roles;
             return this;
@@ -109,6 +137,7 @@ public class User {
             user.password = this.password;
             user.createdAt = this.createdAt;
             user.updatedAt = this.updatedAt;
+            user.articles = this.articles;
             user.roles = this.roles;
 
             return user;

@@ -2,12 +2,14 @@ package com.moviegoer.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-public class DemoApplication {
+@EnableJpaAuditing
+public class MoviegoerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DemoApplication.class, args);
+		SpringApplication.run(MoviegoerApplication.class, args);
 	}
 
 }
