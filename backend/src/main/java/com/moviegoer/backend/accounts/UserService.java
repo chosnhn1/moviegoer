@@ -32,6 +32,15 @@ public class UserService {
         return userRepository.findById(userId).map(UserResponseDto::toDto);
     }
 
+    public UserResponseDto getUserByUsername(String username) {
+        return userRepository
+            .findByUsername(username)
+            .map(UserResponseDto::toDto)
+            .orElseThrow(
+                () -> new UserNotFoundException(String.format("해당 이름(%s)을 가진 사용자를 찾을 수 없습니다.", username))
+            );
+    }
+
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         if (userRepository.findByUsername(userRequestDto.username()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름입니다.");
