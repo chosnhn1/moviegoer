@@ -32,6 +32,7 @@ public class UserService {
         return userRepository.findById(userId).map(UserResponseDto::toDto);
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto getUserByUsername(String username) {
         return userRepository
             .findByUsername(username)
@@ -62,5 +63,46 @@ public class UserService {
         );
 
         return UserResponseDto.toDto(savedUser);
+    }
+
+    public UserResponseDto updateUser(
+        MoviegoerUserDetails userDetails,
+        Long userId,
+        UserRequestDto userRequestDto
+    ) {
+        if (!userDetails.getAuthorities().stream()
+            .anyMatch(authority -> authority
+            .getAuthority().equals(Role.ROLE_ADMIN.name()))
+            && !userDetails.getId().equals(userId)
+        ) {
+            throw new NotAuthorizedException("권한이 없습니다.");
+        }
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(String.format("해당 사용자 (%s)가 존재하지 않습니다.", userId)));
+        
+        user.setUsername(userRequestDto.username());
+        user.setPassword(userRequestDto.password());
+
+        var updateUser = userRepository.save(user);
+        return UserResponseDto.toDto(updateUser);
+    }
+
+    public void deleteUser(
+        MoviegoerUserDetails userDetails,
+        Long userId
+    ) {
+        if (!userDetails.getAuthorities().stream()
+            .anyMatch(authority -> authority
+            .getAuthority().equals(Role.ROLE_ADMIN.name()))
+            && !userDetails.getId().equals(userId)
+        ) {
+            throw new NotAuthorizedException("권한이 없습니다.");
+        }
+        
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(String.format("해당 사용자 (%s)가 존재하지 않습니다.", userId)));
+
+        userRepository.deleteById(user.getId());
     }
 }
