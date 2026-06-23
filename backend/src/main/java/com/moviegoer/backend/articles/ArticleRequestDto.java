@@ -1,8 +1,11 @@
 package com.moviegoer.backend.articles;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record ArticleRequestDto(
-    String content,
-    Long authorId
+    @NotBlank String content,
+    @NotNull Long authorId
 ) {
     
 }
