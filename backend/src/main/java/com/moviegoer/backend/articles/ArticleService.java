@@ -3,6 +3,9 @@ package com.moviegoer.backend.articles;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +28,14 @@ public class ArticleService {
         this.userRepository = userRepository;
     }
 
-    public ArticleResponseDto createArticle(String content, Long userId) {
+    public ArticleResponseDto createArticle(String title, String content, Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException(
-                String.format("해당 아이디 (%d) 를 가진 사용자를 찾을 수 없습니다.", userId)
+                String.format("해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)
             ));
 
         Article article = Article.builder()
+            .title(title)
             .content(content)
             .author(user)
             .build();
@@ -46,12 +50,26 @@ public class ArticleService {
         Article article = articleRepository
             .findById(articleId)
             .orElseThrow(() -> new ArticleNotFoundException(
-                String.format("해당 아이디 (%d) 를 가진 게시글을 찾을 수 없습니다.", articleId)
+                String.format("해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.", articleId)
             ));
             
             return ArticleResponseDto.toDto(article);
         }
 
+    // Not paginated
+    @Transactional(readOnly = true)
+    public List<ArticleResponseDto> getAllArticleList() {
+        var articleList = articleRepository.findAll();
+        return articleList.stream().map(ArticleResponseDto::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ArticleResponseDto> getAllArticlePage(Integer page, Integer size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Article> articlesPage = articleRepository.findAll(pageRequest);
+        return articlesPage.map(ArticleResponseDto::toDto);
+    }
+    
     @Transactional(readOnly = true)
     public List<ArticleResponseDto> getArticleListByUserId(Long userId) {
         User user = userRepository.findById(userId)
@@ -63,16 +81,17 @@ public class ArticleService {
         return articleList.stream().map(ArticleResponseDto::toDto).toList();
     }
 
-    public ArticleResponseDto updateArticle(Long authorId, Long articleId, String content) {
+    public ArticleResponseDto updateArticle(Long authorId, Long articleId, String title, String content) {
         Article article = articleRepository.findById(articleId)
             .orElseThrow(() -> new ArticleNotFoundException(
-            String.format("해당 아이디 (%d) 를 가진 게시글을 찾을 수 없습니다.", articleId)
+            String.format("해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.", articleId)
         ));
 
         if (!article.getAuthor().getId().equals(authorId)) {
-            throw new NotAuthorizedException("게시글 작성자만 수정할 수 있습니다.");
+            throw new NotAuthorizedException("해당 게시글의 작성자만 수정할 수 있습니다.");
         }
 
+        article.setTitle(title);
         article.setContent(content);
         Article updatedArticle = articleRepository.save(article);
         return ArticleResponseDto.toDto(updatedArticle);
@@ -81,11 +100,11 @@ public class ArticleService {
     public void deleteArticle(Long authorId, Long articleId) {
         Article article = articleRepository.findById(articleId)
         .orElseThrow(() -> new ArticleNotFoundException(
-            String.format("해당 아이디 (%d) 를 가진 게시글을 찾을 수 없습니다.", articleId)
+            String.format("해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.", articleId)
         ));
 
         if (!article.getAuthor().getId().equals(authorId)) {
-            throw new NotAuthorizedException("게시글 작성자만 삭제할 수 있습니다.");
+            throw new NotAuthorizedException("해당 게시글의 작성자만 삭제할 수 있습니다.");
         }
 
         articleRepository.deleteById(articleId);

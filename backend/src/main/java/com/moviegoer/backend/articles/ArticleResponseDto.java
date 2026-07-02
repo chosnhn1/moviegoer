@@ -4,19 +4,23 @@ import java.time.LocalDateTime;
 
 public record ArticleResponseDto(
     Long articleId,
+    String title,
     String content,
     Long authorId,
     String authorName,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {
 
     public static ArticleResponseDto toDto(Article article) {
         return new ArticleResponseDto(
             article.getId(),
+            article.getTitle(),
             article.getContent(),
             article.getAuthor().getId(),
             article.getAuthor().getUsername(),
-            article.getCreatedAt()
+            article.getCreatedAt(),
+            article.getUpdatedAt()
         );
     }
 }
